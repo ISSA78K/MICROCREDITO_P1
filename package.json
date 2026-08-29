@@ -1,0 +1,29 @@
+{
+  "name": "microcredito_p1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "generar": "tsx src/Contrato/generar.ts",
+    "validar": "tsx src/Contrato/validar.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
+    "date-fns": "^4.4.0",
+    "decimal.js": "^10.6.0",
+    "yaml": "^2.9.0",
+    "zod": "^4.5.1"
+  }
+}
