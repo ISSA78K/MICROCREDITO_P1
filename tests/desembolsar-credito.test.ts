@@ -1,3 +1,6 @@
+import { Clock } from "../src/Puertos/clock";
+import { SelectorPoliticaMora } from "../src/dominio/politica-mora/selector-politica-mora";
+
 import {
   describe,
   expect,
@@ -13,8 +16,15 @@ import {
 import {
   CreditoRepository,
 } from "../src/Puertos/credito-repository";
+import { C } from "vitest/dist/chunks/reporters.d.BuRON0I0.js";
 
 describe("DesembolsarCredito", () => {
+    const clock: Clock = {
+    ahora: () => new Date("2026-09-17T12:00:00Z"),
+  };
+
+  const selectorPoliticaMora =
+    new SelectorPoliticaMora();
   function crearRepositorio(): CreditoRepository {
     const creditos = new Map();
 
@@ -42,7 +52,9 @@ describe("DesembolsarCredito", () => {
   it("desembolsa un crédito aprobado", () => {
     const casoUso =
       new DesembolsarCredito(
-        crearRepositorio()
+        crearRepositorio(),
+        clock,
+        selectorPoliticaMora
       );
 
     const respuesta =
@@ -78,10 +90,17 @@ describe("DesembolsarCredito", () => {
       saldoCapital:
         Dinero.cero(),
       estado: "solicitado",
+      fechaDesembolso: "2026-09-01",
+      politicaMoraId: "POL-2024-01",
+      interesEnSuspenso: Dinero.cero(),
     });
 
     const casoUso =
-      new DesembolsarCredito(repo);
+      new DesembolsarCredito(
+        repo,
+        clock,
+        selectorPoliticaMora
+      );
 
     expect(() =>
       casoUso.ejecutar({
@@ -99,7 +118,9 @@ describe("DesembolsarCredito", () => {
   it("rechaza un monto cero", () => {
     const casoUso =
       new DesembolsarCredito(
-        crearRepositorio()
+        crearRepositorio(),
+        clock,
+        selectorPoliticaMora
       );
 
     expect(() =>
@@ -114,7 +135,9 @@ describe("DesembolsarCredito", () => {
   it("rechaza un crédito inexistente", () => {
     const casoUso =
       new DesembolsarCredito(
-        crearRepositorio()
+        crearRepositorio(),
+        clock,
+        selectorPoliticaMora
       );
 
     expect(() =>

@@ -1,130 +1,154 @@
+
 # Decisiones de diseño de componentes
 
 ## 1. Separación del dominio
 
-El núcleo de dominio no dependerá de infraestructura.
+El núcleo de dominio es independiente de la infraestructura.
 
-Las reglas financieras estarán concentradas en componentes
-del dominio y serán independientes de base de datos, servidor
-HTTP o interfaz gráfica.
+Las reglas financieras se concentran en los componentes del dominio y no
+dependen de base de datos, servidor HTTP ni interfaz gráfica.
 
-Esto permite ejecutar las reglas mediante pruebas unitarias.
+Esto permite ejecutar las reglas mediante pruebas unitarias
+deterministas.
 
 ## 2. Objeto de Valor Dinero
 
-Todo importe monetario utilizará el objeto de valor Dinero.
+Todo importe monetario utiliza el objeto de valor `Dinero`.
 
-Dinero encapsula el valor y la moneda y evita que diferentes
-partes del sistema manejen importes monetarios de manera
-inconsistente.
+`Dinero` encapsula el valor monetario y las operaciones financieras,
+evitando el uso directo de números de punto flotante para representar
+importes.
 
 ## 3. Plan de amortización
 
-La generación del plan de amortización estará encapsulada
-en PlanAmortizacion.
+La generación del plan de amortización está encapsulada en
+`PlanAmortizacion`.
 
-El diseño permitirá aplicar diferentes estrategias de cálculo
-sin modificar el resto del dominio.
+El cálculo de la cuota se delega a `EstrategiaAmortizacion`, cuya
+implementación actual es `EstrategiaFrancesa`.
+
+Este diseño permite incorporar nuevas estrategias sin modificar el resto
+del dominio.
 
 ## 4. Calculadora de mora
 
-CalculadoraMora será responsable del cálculo de los días de
-atraso, interés moratorio y clasificación del tramo de mora.
+`CalculadoraMora` es responsable de calcular:
 
-La fecha de corte será recibida como parámetro para garantizar
-la reproducibilidad de las pruebas.
+- Días de atraso.
+- Interés moratorio.
+- Tramo de mora.
+- Interés en suspenso.
+
+La fecha de corte se recibe como parámetro para garantizar resultados
+reproducibles.
 
 ## 5. Prelación de pagos
 
-PrelacionPago será responsable de aplicar el pago siguiendo
-el orden establecido por el negocio.
-
-El orden será:
+`PrelacionPago` aplica el pago siguiendo el orden definido por el negocio:
 
 1. Gastos y comisiones.
 2. Interés moratorio.
 3. Interés corriente.
 4. Capital.
 
-Cada concepto consume el monto correspondiente y el remanente
-continúa hacia el siguiente concepto.
+Cada concepto consume únicamente el saldo pendiente correspondiente y el
+remanente continúa hacia el siguiente concepto.
 
 ## 6. Estado del crédito
 
-El ciclo de vida del crédito será modelado mediante estados.
+El ciclo de vida del crédito se modela mediante estados del dominio.
 
-Las transiciones inválidas deberán ser rechazadas por diseño.
+Las transiciones válidas incluyen operaciones como:
 
-Esto permite proteger las reglas del ciclo de vida y evitar
-operaciones que no corresponden al estado actual del crédito.
+- Desembolsar.
+- Regularizar.
+- Reestructurar.
+- Declarar incobrable.
+- Cancelar.
+
+Las transiciones inválidas son rechazadas por diseño.
 
 ## 7. Cartera en riesgo
 
-Cartera será responsable de calcular los indicadores de cartera
-en riesgo.
+`Cartera` calcula los indicadores financieros de cartera, incluyendo:
 
-La clasificación se realizará utilizando los datos del crédito
-y su situación de atraso.
+- Cartera activa.
+- Saldo en riesgo.
+- Porcentaje de cartera en riesgo.
+- Clasificación por tramo.
+- Saldo declarado incobrable.
+
+La clasificación considera los días de atraso y los créditos
+reestructurados.
 
 ## 8. Repositorio
 
-La persistencia se representará mediante un puerto o interfaz.
+La persistencia se representa mediante la abstracción
+`CreditoRepository`.
 
-El dominio no dependerá directamente de una tecnología de base
-de datos.
+Los casos de uso dependen únicamente del puerto y la implementación
+actual corresponde a `CreditoRepositoryMemoria`.
 
-Durante las pruebas podrá utilizarse una implementación en memoria.
+Este diseño permite sustituir posteriormente el mecanismo de persistencia
+sin modificar el dominio.
 
 ## 9. Principios SOLID
 
 ### Single Responsibility Principle
 
-Cada componente tendrá una responsabilidad principal.
+Cada componente posee una única responsabilidad principal.
 
 ### Open/Closed Principle
 
-Las estrategias de cálculo podrán extenderse sin modificar
-el núcleo existente.
+Las estrategias de amortización y las políticas de mora pueden extenderse
+sin modificar el núcleo existente.
 
 ### Dependency Inversion Principle
 
-El dominio dependerá de abstracciones y no de implementaciones
-de infraestructura.
+Los casos de uso dependen de abstracciones (`CreditoRepository`, `Clock`)
+y no de implementaciones concretas.
 
-## 10. GRASP
+## 10. Principios GRASP
 
 ### Experto en información
 
-La responsabilidad se asignará al componente que posee la
-información necesaria para realizar una operación.
+Cada responsabilidad se asigna al componente que posee la información
+necesaria para ejecutarla.
 
 ### Alta cohesión
 
-Cada componente tendrá responsabilidades relacionadas.
+Las responsabilidades relacionadas permanecen agrupadas dentro del mismo
+componente del dominio.
 
 ### Bajo acoplamiento
 
-Los componentes evitarán dependencias innecesarias entre sí.
+Los componentes se comunican mediante puertos e interfaces, reduciendo
+dependencias innecesarias.
 
 ### Polimorfismo
 
-Las políticas que puedan variar se representarán mediante
-abstracciones y estrategias.
+Las variaciones de comportamiento se implementan mediante estrategias y
+abstracciones (`EstrategiaAmortizacion` y `PoliticaMora`).
 
 ## 11. Comprobabilidad
 
-Las funciones del núcleo serán puras siempre que sea posible.
+Las reglas financieras producen resultados deterministas para las mismas
+entradas.
 
-Las fechas necesarias para los cálculos se recibirán como
-parámetros.
+Las fechas necesarias para los cálculos se reciben como parámetros o se
+abstraen mediante el puerto `Clock`.
 
-No se utilizará directamente la fecha del sistema dentro
-de las reglas financieras.
+Esto permite ejecutar pruebas reproducibles sin depender del reloj del
+sistema.
 
 ## 12. Evolución
 
-La arquitectura permitirá agregar nuevos adaptadores sin
-modificar las reglas principales del dominio.
+La arquitectura permite incorporar nuevos adaptadores sin modificar las
+reglas principales del dominio.
 
-Esto permitirá incorporar posteriormente API REST, servidor
-MCP y otras interfaces.
+Entre las extensiones previstas se encuentran:
+
+- API REST.
+- Servidor MCP.
+- Nuevos adaptadores de persistencia.
+- Interfaces conversacionales.

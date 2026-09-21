@@ -1,7 +1,9 @@
 import { Dinero } from "../dominio/dinero";
+import { EstadoCredito } from "../dominio/estado-credito";
 import { PrelacionPago, SaldosPendientes } from "../dominio/prelacion-pago";
 import { CreditoRepository } from "../Puertos/credito-repository";
 import { RegistrarPagoPort } from "../Puertos/casos-uso";
+import { CargoCobranza } from "../dominio/cargo-cobranza";
 
 export interface RegistrarPagoRequest {
   creditoId: string;
@@ -61,11 +63,68 @@ export class RegistrarPago implements RegistrarPagoPort {
       );
     }
 
+    const interesEnSuspenso =
+      credito.interesEnSuspenso ?? Dinero.cero();
+
+    const interesCorrienteConSuspenso =
+  request.saldos.interesCorriente.sumar(
+    interesEnSuspenso
+  );
+
+const cargoCobranza =
+  CargoCobranza.calcular(
+    credito.diasAtraso ?? 0,
+    credito.cargoCobranzaGenerado ?? false
+  );
+
+const gastosConCargo =
+  request.saldos.gastos.sumar(
+    cargoCobranza
+  );
+
+const saldosEfectivos: SaldosPendientes = {
+  ...request.saldos,
+  gastos: gastosConCargo,
+  interesCorriente:
+    interesCorrienteConSuspenso,
+};
+
     const aplicacion =
       PrelacionPago.aplicar(
         request.monto,
-        request.saldos
+        saldosEfectivos
       );
+
+    const saldoRestante =
+      credito.saldoCapital.restar(
+        aplicacion.capital
+      );
+
+    const estadoNuevo: EstadoCredito =
+      credito.estado === "en_mora"
+        ? saldoRestante.esCero()
+          ? "cancelado"
+          : "vigente"
+        : credito.estado;
+
+    this.creditoRepository.guardar({
+      ...credito,
+      saldoCapital: saldoRestante,
+      estado: estadoNuevo,
+      cargoCobranzaGenerado:
+        (credito.cargoCobranzaGenerado ?? false) ||
+        !cargoCobranza.esCero(),
+      interesEnSuspenso:
+        credito.interesEnSuspenso.esPositivo()
+          ? credito.interesEnSuspenso.restar(
+              this.calcularSuspensoReconocido(
+                credito.interesEnSuspenso,
+                request.saldos.interesCorriente,
+                aplicacion.interesCorriente
+              )
+            )
+          : Dinero.cero(),
+    });
 
     const respuesta: RegistrarPagoResponse = {
       pagoId: request.pagoId,
@@ -81,5 +140,27 @@ export class RegistrarPago implements RegistrarPagoPort {
     );
 
     return respuesta;
+  }
+
+  private calcularSuspensoReconocido(
+    interesEnSuspenso: Dinero,
+    interesCorrienteOriginal: Dinero,
+    interesCorrienteAplicado: Dinero
+  ): Dinero {
+    const interesCorrientePagado =
+      interesCorrienteAplicado.centavos <=
+      interesCorrienteOriginal.centavos
+        ? interesCorrienteAplicado
+        : interesCorrienteOriginal;
+
+    const reconocido =
+      interesCorrienteAplicado.restar(
+        interesCorrientePagado
+      );
+
+    return reconocido.centavos >=
+      interesEnSuspenso.centavos
+      ? interesEnSuspenso
+      : reconocido;
   }
 }

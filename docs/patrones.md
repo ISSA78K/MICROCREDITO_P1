@@ -4,6 +4,8 @@ El proyecto utiliza patrones de diseño de dominio, arquitectónicos y
 GoF para mantener bajo acoplamiento, alta cohesión y facilitar la
 evolución del sistema.
 
+---
+
 ## 1. Objeto de Valor (Value Object) — Dinero
 
 **Categoría:** Patrón de diseño de dominio.
@@ -24,17 +26,21 @@ precisión de punto flotante.
 **Aplicación:**
 
 Las operaciones monetarias se realizan mediante `Dinero`, incluyendo
-suma y resta.
+suma y resta. La representación interna utiliza `bigint` para los
+centavos y la moneda soportada por el sistema es GTQ.
 
 ---
 
-## 2. Strategy — GoF
+## 2. Strategy — Amortización
+
+**Categoría:** Patrón GoF.
 
 **Implementación:**
 
 - `src/dominio/plan-amortizacion.ts`
 - `EstrategiaAmortizacion`
 - `EstrategiaFrancesa`
+- `PlanAmortizacion`
 
 **Propósito:**
 

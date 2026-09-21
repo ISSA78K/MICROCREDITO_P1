@@ -7,6 +7,8 @@ export interface Cuota {
   interes: Dinero;
   cuota: Dinero;
   saldo: Dinero;
+  diasAtraso: number;
+  cargoCobranzaGenerado: boolean;
 }
 
 export interface ParametrosAmortizacion {
@@ -169,6 +171,8 @@ export class PlanAmortizacion {
           cuotaCentavos
         ),
         saldo: new Dinero(saldo),
+        diasAtraso: 0,
+        cargoCobranzaGenerado: false,
       });
     }
 

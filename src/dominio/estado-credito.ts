@@ -152,7 +152,12 @@ class EstadoEnMora extends EstadoBase {
   override declararIncobrable(): "incobrable" {
     return "incobrable";
   }
+
+    override cancelar(): "cancelado" {
+    return "cancelado";
+  }
 }
+
 
 class EstadoReestructurado extends EstadoBase {
   readonly nombre = "reestructurado" as const;

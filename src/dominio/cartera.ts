@@ -15,6 +15,8 @@ export interface ResultadoCartera {
   porcentajeEnRiesgo: number;
   porTramo: Record<string, Dinero>;
   dadoPorIncobrableEnElPeriodo: Dinero;
+  carteraEnAtraso: Dinero;
+  porcentajeEnAtraso: number;
 }
 
 export class Cartera {
@@ -23,6 +25,7 @@ export class Cartera {
   ): ResultadoCartera {
     let carteraActiva = Dinero.cero();
     let saldoEnRiesgo = Dinero.cero();
+    let carteraEnAtraso = Dinero.cero();
 
     const porTramo: Record<string, Dinero> = {};
 
@@ -36,8 +39,15 @@ export class Cartera {
             credito.saldoCapital
           );
 
-        continue;
-      }
+      continue;
+    }
+      if (credito.diasAtraso > 0) {
+      carteraEnAtraso =
+      carteraEnAtraso.sumar(
+      credito.saldoCapital
+    );
+
+  }
 
       carteraActiva =
         carteraActiva.sumar(
@@ -55,13 +65,15 @@ export class Cartera {
           );
 
         const tramo =
-          this.determinarTramo(
-            credito.diasAtraso
-          );
+  credito.reestructurado === true
+    ? "reestructurado"
+    : this.determinarTramo(
+        credito.diasAtraso
+      );
 
-        porTramo[tramo] =
-          (porTramo[tramo] ?? Dinero.cero())
-            .sumar(credito.saldoCapital);
+porTramo[tramo] =
+  (porTramo[tramo] ?? Dinero.cero())
+    .sumar(credito.saldoCapital);
       }
     }
 
@@ -77,12 +89,26 @@ export class Cartera {
         .mul(100)
         .toNumber();
 
+        const porcentajeEnAtraso =
+  carteraActiva.centavos === 0n
+    ? 0
+    : new Decimal(
+        carteraEnAtraso.centavos.toString()
+      )
+        .div(
+          carteraActiva.centavos.toString()
+        )
+        .mul(100)
+        .toNumber();
+
     return {
       carteraActiva,
       saldoEnRiesgo,
       porcentajeEnRiesgo,
       porTramo,
       dadoPorIncobrableEnElPeriodo,
+      carteraEnAtraso,
+      porcentajeEnAtraso,
     };
   }
 

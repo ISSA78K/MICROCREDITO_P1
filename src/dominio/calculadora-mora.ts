@@ -1,6 +1,7 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import Decimal from "decimal.js";
 import { Dinero } from "./dinero";
+import { PoliticaMora } from "./politica-mora/politica-mora";
+import { PoliticaPlana } from "./politica-mora/politica-plana";
 
 export type TramoMora =
   | "ninguno"
@@ -13,6 +14,7 @@ export interface ResultadoMora {
   diasAtraso: number;
   tramo: TramoMora;
   interesMoratorio: Dinero;
+  interesEnSuspenso: Dinero;
 }
 
 export class CalculadoraMora {
@@ -62,32 +64,24 @@ export class CalculadoraMora {
       return Dinero.cero();
     }
 
-    const capital = new Decimal(
-      capitalEnMora.centavos.toString()
-    );
+    const capitalCentavos =
+      capitalEnMora.centavos;
 
-    const tasa = new Decimal(
-      tasaDiaria.toString()
-    );
-
-    const interesCentavos = capital
-      .mul(tasa)
-      .mul(diasAtraso)
-      .toDecimalPlaces(
-        0,
-        Decimal.ROUND_HALF_UP
-      );
+    const interes =
+      Number(capitalCentavos) *
+      tasaDiaria *
+      diasAtraso;
 
     return new Dinero(
-      BigInt(interesCentavos.toFixed(0))
+      BigInt(Math.round(interes))
     );
   }
 
-  static calcular(
+  static calcularConPolitica(
     fechaVencimiento: string,
     fechaCorte: string,
     capitalEnMora: Dinero,
-    tasaDiaria: number
+    politica: PoliticaMora
   ): ResultadoMora {
     const diasAtraso =
       this.calcularDiasAtraso(
@@ -98,17 +92,82 @@ export class CalculadoraMora {
     const tramo =
       this.determinarTramo(diasAtraso);
 
-    const interesMoratorio =
-      this.calcularInteresMoratorio(
-        capitalEnMora,
-        tasaDiaria,
-        diasAtraso
+    const diasInteresCorriente =
+  Math.min(diasAtraso, 90);
+
+const interesMoratorio =
+  politica.calcularInteres(
+    capitalEnMora,
+    diasInteresCorriente
+  );
+
+const interesTotal =
+  politica.calcularInteres(
+    capitalEnMora,
+    diasAtraso
+  );
+
+const interesEnSuspenso =
+  interesTotal.centavos >=
+  interesMoratorio.centavos
+    ? interesTotal.restar(
+        interesMoratorio
+      )
+    : Dinero.cero();
+
+return {
+  diasAtraso,
+  tramo,
+  interesMoratorio,
+  interesEnSuspenso,
+};
+  }
+
+  static calcular(
+    fechaVencimiento: string,
+    fechaCorte: string,
+    capitalEnMora: Dinero,
+    tasaDiaria: number
+  ): ResultadoMora {
+    const politica = new PoliticaPlana();
+
+    const diasAtraso =
+      this.calcularDiasAtraso(
+        fechaVencimiento,
+        fechaCorte
       );
+
+    const tramo =
+      this.determinarTramo(diasAtraso);
+
+    const diasInteresCorriente =
+  Math.min(diasAtraso, 90);
+
+const interesMoratorio =
+  politica.calcularInteres(
+    capitalEnMora,
+    diasInteresCorriente
+  );
+
+const interesTotal =
+  politica.calcularInteres(
+    capitalEnMora,
+    diasAtraso
+  );
+
+const interesPrimeros90 =
+  interesMoratorio;
+
+const interesEnSuspenso =
+  interesTotal.restar(
+    interesPrimeros90
+  );
 
     return {
       diasAtraso,
       tramo,
       interesMoratorio,
+      interesEnSuspenso,
     };
   }
 }

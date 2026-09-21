@@ -1,3 +1,9 @@
+import { Dinero } from "../src/dominio/dinero";
+import { PoliticaMora } from "../src/dominio/politica-mora/politica-mora";
+import { PoliticaPlana } from "../src/dominio/politica-mora/politica-plana";
+import { PoliticaEscalonada } from "../src/dominio/politica-mora/politica-escalonada";
+import { PoliticaRetroactiva } from "../src/dominio/politica-mora/politica-retroactiva";
+
 import {
   describe,
   expect,
@@ -125,5 +131,50 @@ describe("Contrato Zod", () => {
       });
 
     expect(resultado.success).toBe(true);
+  });
+
+    it("cumple el contrato de PoliticaMora para las políticas disponibles", () => {
+    const politicas: PoliticaMora[] = [
+      new PoliticaPlana(),
+      new PoliticaEscalonada(),
+      new PoliticaRetroactiva(),
+    ];
+
+    const capital = Dinero.desdeDecimal("725.76");
+
+    for (const politica of politicas) {
+      expect(politica.id).toBeTruthy();
+      expect(politica.fechaVigencia).toMatch(
+        /^\d{4}-\d{2}-\d{2}$/
+      );
+
+      const tramos = politica.obtenerTramos();
+
+      expect(tramos.length).toBeGreaterThan(0);
+
+      for (const tramo of tramos) {
+        expect(tramo.desdeDia).toBeGreaterThan(0);
+        expect(tramo.tasaAnual).toBeGreaterThan(0);
+      }
+
+      const resultadoCero =
+        politica.calcularInteres(
+          capital,
+          0
+        );
+
+      expect(
+        resultadoCero.toDecimal()
+      ).toBe("0.00");
+
+      const resultado =
+        politica.calcularInteres(
+          capital,
+          15
+        );
+
+      expect(resultado).toBeInstanceOf(Dinero);
+      expect(resultado.esPositivo()).toBe(true);
+    }
   });
 });

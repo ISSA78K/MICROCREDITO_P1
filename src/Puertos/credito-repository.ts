@@ -6,6 +6,11 @@ export interface Credito {
   clienteId: string;
   saldoCapital: Dinero;
   estado: EstadoCredito;
+  fechaDesembolso: string;
+  politicaMoraId: string;
+  interesEnSuspenso: Dinero;
+  diasAtraso?: number;
+  cargoCobranzaGenerado?: boolean;
 }
 
 export interface CreditoRepository {

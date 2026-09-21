@@ -1,6 +1,8 @@
 import { Dinero } from "../dominio/dinero";
 import { DesembolsarCreditoPort } from "../Puertos/casos-uso";
 import { CreditoState } from "../dominio/estado-credito";
+import { Clock } from "../Puertos/clock";
+import { SelectorPoliticaMora } from "../dominio/politica-mora/selector-politica-mora";
 
 import {
   Credito,
@@ -20,7 +22,9 @@ export interface DesembolsarCreditoResponse {
 
 export class DesembolsarCredito implements DesembolsarCreditoPort {
   constructor(
-    private readonly creditoRepository: CreditoRepository
+    private readonly creditoRepository: CreditoRepository,
+    private readonly clock: Clock,
+    private readonly selectorPoliticaMora: SelectorPoliticaMora
   ) {}
 
   ejecutar(
@@ -58,10 +62,23 @@ const estadoVigente =
     estadoDesembolsado
   ).desembolsar();
 
+  const fechaDesembolso =
+  this.clock
+    .ahora()
+    .toISOString()
+    .slice(0, 10);
+
+const politicaMora =
+  this.selectorPoliticaMora.seleccionar(
+    fechaDesembolso
+  );
+
 const creditoDesembolsado: Credito = {
   ...credito,
   saldoCapital: request.monto,
   estado: estadoVigente,
+  fechaDesembolso,
+  politicaMoraId: politicaMora.id,
 };
 
     this.creditoRepository.guardar(

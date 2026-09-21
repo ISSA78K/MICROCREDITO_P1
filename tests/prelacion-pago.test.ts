@@ -84,4 +84,68 @@ describe("PrelacionPago", () => {
 
   expect(aplicado.toDecimal()).toBe("100.00");
 });
+
+it("reproduce exactamente el caso de referencia 6.6: pago de Q1,011.88", () => {
+  const resultado = PrelacionPago.aplicar(
+    Dinero.desdeDecimal("1011.88"),
+    {
+      gastos: Dinero.desdeDecimal("0.00"),
+      interesMoratorio: Dinero.desdeDecimal("7.26"),
+      interesCorriente: Dinero.desdeDecimal("278.86"),
+      capital: Dinero.desdeDecimal("725.76"),
+    }
+  );
+
+  expect(resultado.gastos.toDecimal()).toBe("0.00");
+
+  expect(
+    resultado.interesMoratorio.toDecimal()
+  ).toBe("7.26");
+
+  expect(
+    resultado.interesCorriente.toDecimal()
+  ).toBe("278.86");
+
+  expect(
+    resultado.capital.toDecimal()
+  ).toBe("725.76");
+
+  expect(
+    resultado.excedente.toDecimal()
+  ).toBe("0.00");
+});
+
+  it("aplica el cargo de cobranza de Q25 antes de intereses y capital", () => {
+    const resultado = PrelacionPago.aplicar(
+      Dinero.desdeDecimal("1047.76"),
+      {
+        gastos: Dinero.desdeDecimal("25.00"),
+        interesMoratorio:
+          Dinero.desdeDecimal("18.14"),
+        interesCorriente:
+          Dinero.desdeDecimal("278.86"),
+        capital:
+          Dinero.desdeDecimal("725.76"),
+      }
+    );
+
+    expect(resultado.gastos.toDecimal()).toBe("25.00");
+
+    expect(
+      resultado.interesMoratorio.toDecimal()
+    ).toBe("18.14");
+
+    expect(
+      resultado.interesCorriente.toDecimal()
+    ).toBe("278.86");
+
+    expect(
+      resultado.capital.toDecimal()
+    ).toBe("725.76");
+
+    expect(
+      resultado.excedente.toDecimal()
+    ).toBe("0.00");
+  });
+
 });
