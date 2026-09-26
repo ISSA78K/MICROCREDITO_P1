@@ -90,4 +90,4 @@ Durante el desarrollo de este proyecto se utilizaron herramientas de inteligenci
 La herramienta de IA se utilizó como apoyo durante el desarrollo. El equipo revisó, probó y comprendió las implementaciones realizadas, incluyendo las reglas del dominio, las pruebas y las decisiones de diseño.
 
 ## Link de prototipo en Moqups
-https://docs.google.com/document/d/10qhsl_RQ54gfzhbDkF4QWpQZSZ4N3DJrCSsolkIYlbw/edit?tab=t.0
+(https://app.moqups.com/egUz7vFgpRNs1XUdID3JU9zhiO7CZNoL/view/page/a6567ad36)
