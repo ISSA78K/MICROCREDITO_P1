@@ -27,11 +27,11 @@ export class DesembolsarCredito implements DesembolsarCreditoPort {
     private readonly selectorPoliticaMora: SelectorPoliticaMora
   ) {}
 
-  ejecutar(
+  async ejecutar(
     request: DesembolsarCreditoRequest
-  ): DesembolsarCreditoResponse {
+  ): Promise<DesembolsarCreditoResponse> {
     const credito =
-      this.creditoRepository.buscarPorId(
+      await this.creditoRepository.buscarPorId(
         request.creditoId
       );
 
@@ -52,36 +52,36 @@ export class DesembolsarCredito implements DesembolsarCreditoPort {
     }
 
     const estadoActual =
-  CreditoState.crear(credito.estado);
+      CreditoState.crear(credito.estado);
 
-const estadoDesembolsado =
-  estadoActual.desembolsar();
+    const estadoDesembolsado =
+      estadoActual.desembolsar();
 
-const estadoVigente =
-  CreditoState.crear(
-    estadoDesembolsado
-  ).desembolsar();
+    const estadoVigente =
+      CreditoState.crear(
+        estadoDesembolsado
+      ).desembolsar();
 
-  const fechaDesembolso =
-  this.clock
-    .ahora()
-    .toISOString()
-    .slice(0, 10);
+    const fechaDesembolso =
+      this.clock
+        .ahora()
+        .toISOString()
+        .slice(0, 10);
 
-const politicaMora =
-  this.selectorPoliticaMora.seleccionar(
-    fechaDesembolso
-  );
+    const politicaMora =
+      this.selectorPoliticaMora.seleccionar(
+        fechaDesembolso
+      );
 
-const creditoDesembolsado: Credito = {
-  ...credito,
-  saldoCapital: request.monto,
-  estado: estadoVigente,
-  fechaDesembolso,
-  politicaMoraId: politicaMora.id,
-};
+    const creditoDesembolsado: Credito = {
+      ...credito,
+      saldoCapital: request.monto,
+      estado: estadoVigente,
+      fechaDesembolso,
+      politicaMoraId: politicaMora.id,
+    };
 
-    this.creditoRepository.guardar(
+    await this.creditoRepository.guardar(
       creditoDesembolsado
     );
 

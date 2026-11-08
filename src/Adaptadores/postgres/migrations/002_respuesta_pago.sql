@@ -1,0 +1,2 @@
+ALTER TABLE pagos
+ADD COLUMN IF NOT EXISTS respuesta_json JSONB;

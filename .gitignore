@@ -1,5 +1,27 @@
+# Dependencias
 node_modules/
-dist/
+
+# Variables de entorno
 .env
 .env.*
 !.env.example
+
+# Archivos compilados
+dist/
+dist-web/
+web/dist/
+
+# Respaldos
+*.bak
+*.bak2
+*.bak3
+*.backup.ts
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+# Respaldos adicionales
+*.bak*

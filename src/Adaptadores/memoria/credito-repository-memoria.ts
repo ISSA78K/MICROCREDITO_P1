@@ -1,3 +1,4 @@
+
 import {
   Credito,
   CreditoRepository,
@@ -11,13 +12,19 @@ export class CreditoRepositoryMemoria
     Credito
   >();
 
-  buscarPorId(
+  async buscarPorId(
     creditoId: string
-  ): Credito | undefined {
+  ): Promise<Credito | undefined> {
     return this.creditos.get(creditoId);
   }
 
-  guardar(credito: Credito): void {
+  async listarTodos(): Promise<Credito[]> {
+    return Array.from(this.creditos.values());
+  }
+
+  async guardar(
+    credito: Credito
+  ): Promise<void> {
     this.creditos.set(
       credito.creditoId,
       credito

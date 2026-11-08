@@ -1,3 +1,4 @@
+
 import { Dinero } from "../dominio/dinero";
 import { EstadoCredito } from "../dominio/estado-credito";
 
@@ -16,9 +17,11 @@ export interface Credito {
 export interface CreditoRepository {
   buscarPorId(
     creditoId: string
-  ): Credito | undefined;
+  ): Promise<Credito | undefined>;
+
+  listarTodos(): Promise<Credito[]>;
 
   guardar(
     credito: Credito
-  ): void;
+  ): Promise<void>;
 }

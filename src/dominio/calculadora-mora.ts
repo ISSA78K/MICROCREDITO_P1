@@ -1,7 +1,6 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { Dinero } from "./dinero";
 import { PoliticaMora } from "./politica-mora/politica-mora";
-import { PoliticaPlana } from "./politica-mora/politica-plana";
 
 export type TramoMora =
   | "ninguno"
@@ -93,44 +92,46 @@ export class CalculadoraMora {
       this.determinarTramo(diasAtraso);
 
     const diasInteresCorriente =
-  Math.min(diasAtraso, 90);
+      Math.min(diasAtraso, 90);
 
-const interesMoratorio =
-  politica.calcularInteres(
-    capitalEnMora,
-    diasInteresCorriente
-  );
+    const diasInteresTotal =
+      Math.min(diasAtraso, 120);
 
-const interesTotal =
-  politica.calcularInteres(
-    capitalEnMora,
-    diasAtraso
-  );
+    const interesMoratorio =
+      politica.calcularInteres(
+        capitalEnMora,
+        diasInteresCorriente
+      );
 
-const interesEnSuspenso =
-  interesTotal.centavos >=
-  interesMoratorio.centavos
-    ? interesTotal.restar(
-        interesMoratorio
-      )
-    : Dinero.cero();
+    const interesTotal =
+      politica.calcularInteres(
+        capitalEnMora,
+        diasInteresTotal
+      );
 
-return {
-  diasAtraso,
-  tramo,
-  interesMoratorio,
-  interesEnSuspenso,
-};
+    const interesEnSuspenso =
+      interesTotal.centavos >=
+      interesMoratorio.centavos
+        ? interesTotal.restar(
+            interesMoratorio
+          )
+        : Dinero.cero();
+
+    return {
+      diasAtraso,
+      tramo,
+      interesMoratorio,
+      interesEnSuspenso,
+    };
   }
 
+  
   static calcular(
     fechaVencimiento: string,
     fechaCorte: string,
     capitalEnMora: Dinero,
     tasaDiaria: number
   ): ResultadoMora {
-    const politica = new PoliticaPlana();
-
     const diasAtraso =
       this.calcularDiasAtraso(
         fechaVencimiento,
@@ -141,27 +142,32 @@ return {
       this.determinarTramo(diasAtraso);
 
     const diasInteresCorriente =
-  Math.min(diasAtraso, 90);
+      Math.min(diasAtraso, 90);
 
-const interesMoratorio =
-  politica.calcularInteres(
-    capitalEnMora,
-    diasInteresCorriente
-  );
+    const diasInteresTotal =
+      Math.min(diasAtraso, 120);
 
-const interesTotal =
-  politica.calcularInteres(
-    capitalEnMora,
-    diasAtraso
-  );
+    const interesMoratorio =
+      this.calcularInteresMoratorio(
+        capitalEnMora,
+        tasaDiaria,
+        diasInteresCorriente
+      );
 
-const interesPrimeros90 =
-  interesMoratorio;
+    const interesTotal =
+      this.calcularInteresMoratorio(
+        capitalEnMora,
+        tasaDiaria,
+        diasInteresTotal
+      );
 
-const interesEnSuspenso =
-  interesTotal.restar(
-    interesPrimeros90
-  );
+    const interesEnSuspenso =
+      interesTotal.centavos >=
+      interesMoratorio.centavos
+        ? interesTotal.restar(
+            interesMoratorio
+          )
+        : Dinero.cero();
 
     return {
       diasAtraso,

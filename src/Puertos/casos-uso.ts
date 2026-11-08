@@ -23,8 +23,8 @@ import {
  */
 export interface RegistrarPagoPort {
   ejecutar(
-    request: RegistrarPagoRequest
-  ): RegistrarPagoResponse;
+  request: RegistrarPagoRequest
+): Promise<RegistrarPagoResponse>;
 }
 
 /**
@@ -32,8 +32,8 @@ export interface RegistrarPagoPort {
  */
 export interface DesembolsarCreditoPort {
   ejecutar(
-    request: DesembolsarCreditoRequest
-  ): DesembolsarCreditoResponse;
+  request: DesembolsarCreditoRequest
+): Promise<DesembolsarCreditoResponse>;	
 }
 
 /**
