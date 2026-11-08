@@ -344,3 +344,6 @@ El Sistema de Gestión de Microcrédito (SGMC) considera medidas y recomendacion
 - Validar las entradas recibidas por la API antes de procesarlas.
 - Manejar los errores de la API y del asistente de IA de manera controlada, evitando revelar credenciales, rutas internas o información sensible.
 - Mantener las herramientas MCP limitadas a las funcionalidades definidas para el sistema.
+## Link de prototipo en Moqups
+
+(https://app.moqups.com/egUz7vFgpRNs1XUdID3JU9zhiO7CZNoL/view/page/a6567ad36)
